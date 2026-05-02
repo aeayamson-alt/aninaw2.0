@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Aninaw Laserworks | Catalog</title>
+
+<style>
+:root {
+    --brown: #5D4037;
+    --cream: #FDFBF7;
+    --accent: #8D6E63;
+    --text: #3E2723;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--cream);
+    margin: 0;
+    color: var(--text);
+}
+
+/* HEADER */
+header {
+    text-align: center;
+    padding: 30px 15px;
+}
+header h1 {
+    margin: 0;
+    letter-spacing: 2px;
+    color: var(--brown);
+}
+header p {
+    color: var(--accent);
+    margin-top: 5px;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 10px;
+}
+
+/* LOADING */
+#loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--accent);
+}
+
+/* CATEGORY */
+.category {
+    margin-top: 30px;
+}
+.category-title {
+    background: var(--brown);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    transition: 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-4px);
+}
+
+/* IMAGE */
+.card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* CONTENT */
+.card-body {
+    padding: 12px;
+}
+.name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.specs {
+    font-size: 0.85rem;
+    color: #777;
+    margin-bottom: 8px;
+}
+.price {
+    font-weight: bold;
+    color: var(--brown);
+}
+
+/* FOOTER */
+footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--accent);
+    font-size: 0.9rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Aninaw Laserworks</h1>
+    <p>Artisan Crafts & Personalized Woodworks</p>
+</header>
+
+<div class="container">
+    <div id="loading">Gathering your catalog...</div>
+    <div id="catalog"></div>
+</div>
+
+<footer>
+✨ Bulk discounts available. Let's discuss your project details.
+</footer>
+
+<script>
+const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT_uhj45yPvprCyOww1rlI0tYq9MjlRgv_cE_YKvcFYAV6ikKbnRbaaVNJ9BN_-koCWnECappGP8hRF/pub?gid=0&single=true&output=csv";
+
+async function loadCatalog() {
+    const loading = document.getElementById("loading");
+    const container = document.getElementById("catalog");
+
+    try {
+        const res = await fetch(sheetUrl);
+        const text = await res.text();
+
+        const rows = text.split(/\r?\n/).map(r => r.split(","));
+        const catalog = {};
+
+        for (let i = 1; i < rows.length; i++) {
+            let [cat, product, specs, price, image] = rows[i].map(x => x?.replace(/"/g, '').trim());
+
+            if (!product || product === "undefined") continue;
+
+            if (!catalog[cat]) catalog[cat] = [];
+            catalog[cat].push({ product, specs, price, image });
+        }
+
+        container.innerHTML = "";
+
+        for (let cat in catalog) {
+            const section = document.createElement("div");
+            section.className = "category";
+
+            section.innerHTML = `
+                <div class="category-title">${cat || "Products"}</div>
+                <div class="grid">
+                    ${catalog[cat].map(item => `
+                        <div class="card">
+                            ${item.image ? `
+                                <img 
+                                    src="${item.image}" 
+                                    loading="lazy"
+                                    onerror="this.style.display='none'"
+                                >
+                            ` : ""}
+                            <div class="card-body">
+                                <div class="name">${item.product}</div>
+                                <div class="specs">${item.specs}</div>
+                                <div class="price">₱${item.price}</div>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+
+            container.appendChild(section);
+        }
+
+        loading.style.display = "none";
+
+    } catch (err) {
+        loading.textContent = "Error loading catalog.";
+    }
+}
+
+window.addEventListener("DOMContentLoaded", loadCatalog);
+</script>
+
+</body>
+</html>
