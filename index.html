@@ -87,6 +87,7 @@ header p {
     width: 100%;
     height: 150px;
     object-fit: cover;
+    cursor: pointer;
 }
 
 /* CONTENT */
@@ -105,6 +106,47 @@ header p {
 .price {
     font-weight: bold;
     color: var(--brown);
+}
+
+/* BUTTON */
+.order-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    background: var(--brown);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.order-btn:hover {
+    background: #3e2723;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    padding-top: 60px;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 80%;
+}
+
+.close {
+    position: absolute;
+    top: 20px; right: 30px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
 }
 
 /* FOOTER */
@@ -130,12 +172,19 @@ footer {
 </div>
 
 <footer>
-✨ Bulk discounts available. Let's discuss your project details.
+✨ Custom designs available. Bulk orders welcome—message us to start your piece.
 </footer>
+
+<!-- IMAGE MODAL -->
+<div id="imgModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImg">
+</div>
 
 <script>
 const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT_uhj45yPvprCyOww1rlI0tYq9MjlRgv_cE_YKvcFYAV6ikKbnRbaaVNJ9BN_-koCWnECappGP8hRF/pub?gid=0&single=true&output=csv";
 
+/* LOAD CATALOG */
 async function loadCatalog() {
     const loading = document.getElementById("loading");
     const container = document.getElementById("catalog");
@@ -171,6 +220,7 @@ async function loadCatalog() {
                                 <img 
                                     src="${item.image}" 
                                     loading="lazy"
+                                    onclick="openModal(this.src)"
                                     onerror="this.style.display='none'"
                                 >
                             ` : ""}
@@ -178,6 +228,10 @@ async function loadCatalog() {
                                 <div class="name">${item.product}</div>
                                 <div class="specs">${item.specs}</div>
                                 <div class="price">₱${item.price}</div>
+
+                                <button onclick="orderNow('${item.product}')" class="order-btn">
+                                    Message to Order
+                                </button>
                             </div>
                         </div>
                     `).join("")}
@@ -192,6 +246,33 @@ async function loadCatalog() {
     } catch (err) {
         loading.textContent = "Error loading catalog.";
     }
+}
+
+/* IMAGE MODAL */
+function openModal(src) {
+    const modal = document.getElementById("imgModal");
+    const modalImg = document.getElementById("modalImg");
+
+    modal.style.display = "block";
+    modalImg.src = src;
+}
+
+document.querySelector(".close").onclick = function() {
+    document.getElementById("imgModal").style.display = "none";
+};
+
+window.onclick = function(e) {
+    const modal = document.getElementById("imgModal");
+    if (e.target == modal) {
+        modal.style.display = "none";
+    }
+};
+
+/* MESSENGER */
+function orderNow(productName) {
+    const message = `Hi! I'm interested in: ${productName}`;
+    const url = `https://m.me/aninawlaserworks?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
 }
 
 window.addEventListener("DOMContentLoaded", loadCatalog);
